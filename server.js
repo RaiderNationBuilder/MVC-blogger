@@ -1,6 +1,9 @@
 const express = require('express');
 const routes = require('./controller/handlebarRoutes');
 const userRoutes= require('./controller/api/user-routes')
+const userRoutes= require('./controller/api/comment-routes')
+const userRoutes= require('./controller/api/post-routes')
+
 const sequelize = require('./config/connection');
 // import sequelize connection
 
