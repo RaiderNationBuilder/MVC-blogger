@@ -1,31 +1,32 @@
 const express = require('express');
-const routes = require('./controller/handlebarRoutes');
-const userRoutes= require('./controller/api/user-routes')
-const commentRoutes= require('./controller/api/comment-routes')
-const postRoutes= require('./controller/api/post-routes')
-
+const routes = require('./controllers');
 const sequelize = require('./config/connection');
-// import sequelize connection
-
-const { engine } = require('express-handlebars');
-
+const path = require('path');
+const helpers = require('./utils/helpers');
+const exphbs = require('express-handlebars');
+const hbs = exphbs.create({ helpers });
+const session = require('express-session');
 const app = express();
 const PORT = process.env.PORT || 3001;
+const SequelizeStore = require('connect-session-sequelize')(session.Store);
+const sess = {
+  secret: 'Super secret secret',
+  cookie: { maxAge: 36000 },
+  resave: false,
+  saveUninitialized: true,
+  store: new SequelizeStore({
+    db: sequelize
+  })
+};
 
+app.use(session(sess));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-app.engine('handlebars', engine());
+app.use(express.static(path.join(__dirname, 'public')));
+app.engine('handlebars', hbs.engine);
 app.set('view engine', 'handlebars');
-app.set('views', './views');
-
 app.use(routes);
-app.use(userRoutes)
 
-// sync sequelize models to the database, then turn on the server
-sequelize.sync({ force: false }).then(function() {
-    app.listen(PORT, function() {
-      console.log('App listening on PORT ' + PORT);
-    });
-  });
-  
+sequelize.sync({ force: false }).then(() => {
+  app.listen(PORT, () => console.log('Now listening'));
+});
